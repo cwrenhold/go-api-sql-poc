@@ -1,20 +1,43 @@
 package main
 
 import (
-	"github.com/cwrenhold/go-api-sql-poc/initializers"
+	"fmt"
+	"log"
+	"os"
+
 	"github.com/cwrenhold/go-api-sql-poc/models"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
+var GormDB *gorm.DB
+
+func GormConnectToDB() {
+	host := os.Getenv("POSTGRES_HOSTNAME")
+	port := os.Getenv("POSTGRES_PORT")
+	user := os.Getenv("POSTGRES_USER")
+	password := os.Getenv("POSTGRES_PASSWORD")
+	dbname := os.Getenv("POSTGRES_DB")
+
+	var err error
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Europe/London", host, user, password, dbname, port)
+	GormDB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+
+	if err != nil {
+		log.Fatal("failed to connect database")
+	}
+}
+
 func init() {
-	initializers.GormConnectToDB()
+	GormConnectToDB()
 }
 
 func main() {
-	initializers.GormDB.AutoMigrate(&models.Task{})
+	GormDB.AutoMigrate(&models.Task{})
 
 	// If there aren't any tasks in the database, add some
 	var count int64
-	initializers.GormDB.Model(&models.Task{}).Count(&count)
+	GormDB.Model(&models.Task{}).Count(&count)
 
 	if count == 0 {
 		defaultTasks := []models.Task{
@@ -23,7 +46,7 @@ func main() {
 		}
 
 		for _, task := range defaultTasks {
-			initializers.GormDB.Create(&task)
+			GormDB.Create(&task)
 		}
 	}
 }
