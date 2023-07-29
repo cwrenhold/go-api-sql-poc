@@ -1,1 +1,3 @@
-SELECT * FROM tasks;
+SELECT
+    *
+FROM tasks;

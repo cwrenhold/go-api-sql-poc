@@ -1,1 +1,5 @@
-SELECT * FROM tasks WHERE is_complete = false;
+SELECT
+    *
+FROM tasks
+
+WHERE is_complete = false;
